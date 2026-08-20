@@ -76,47 +76,50 @@ const app = {
     },
 
     switchView(viewId) {
-        // Hide all views
-        document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
-        const target = document.getElementById(viewId);
-        if (target) target.classList.remove('hidden');
+            // Hide all views
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
+            const target = document.getElementById(viewId);
+            if (target) target.classList.remove('hidden');
 
-        // Manage UI headers/footers based on the view
-        const isSubView = target && target.classList.contains('sub-view');
-        const header = document.getElementById('appHeader');
-        const backBtn = document.getElementById('globalBackBtn');
-        const mobileNav = document.getElementById('mobileNav');
-        const title = document.getElementById('headerTitle');
+            // Manage UI headers/footers based on the view
+            const isSubView = target && target.classList.contains('sub-view');
+            const header = document.getElementById('appHeader');
+            const backBtn = document.getElementById('globalBackBtn');
+            const mobileNav = document.getElementById('mobileNav');
+            const title = document.getElementById('headerTitle');
 
-        if (viewId === 'view-wallet') {
-            header.classList.remove('sub-header');
-            backBtn.classList.add('hidden');
-            if (title) title.style.display = 'none'; 
-            if (mobileNav) mobileNav.style.display = 'flex';
-        } else {
-            header.classList.add('sub-header');
-            if (title) title.style.display = 'flex'; 
-            if (mobileNav) mobileNav.style.display = isSubView ? 'none' : 'flex';
-            
-            if (this.history.length > 0) {
-                backBtn.classList.remove('hidden');
+            if (viewId === 'view-wallet') {
+                // Hide the entire top header exclusively on the Dashboard
+                if (header) header.style.display = 'none'; 
+                if (mobileNav) mobileNav.style.display = 'flex';
             } else {
-                backBtn.classList.add('hidden');
+                // Restore and configure the top header for all other pages
+                if (header) {
+                    header.style.display = 'flex';
+                    header.classList.add('sub-header');
+                }
+                if (title) title.style.display = 'flex'; 
+                if (mobileNav) mobileNav.style.display = isSubView ? 'none' : 'flex';
+                
+                if (this.history.length > 0) {
+                    backBtn.classList.remove('hidden');
+                } else {
+                    backBtn.classList.add('hidden');
+                }
+                
+                // Set contextual header titles
+                if(viewId === 'view-projects-list') title.innerText = 'Projects';
+                if(viewId === 'view-transactions') title.innerText = 'Payment History';
+                if(viewId === 'view-project-create') title.innerText = 'New Project';
+                if(viewId === 'view-project-detail') title.innerText = 'Project Details';
+                if(viewId === 'view-checkout') title.innerText = 'Payment';
             }
-            
-            // Set contextual header titles
-            if(viewId === 'view-projects-list') title.innerText = 'Projects';
-            if(viewId === 'view-transactions') title.innerText = 'Payment History';
-            if(viewId === 'view-project-create') title.innerText = 'New Project';
-            if(viewId === 'view-project-detail') title.innerText = 'Project Details';
-            if(viewId === 'view-checkout') title.innerText = 'Payment';
-        }
 
-        // Fire rendering logic
-        if(viewId === 'view-wallet') this.updateDashboard();
-        if(viewId === 'view-projects-list') this.renderProjectsList();
-        if(viewId === 'view-transactions') this.renderTransactions();
-    },
+            // Fire rendering logic
+            if(viewId === 'view-wallet') this.updateDashboard();
+            if(viewId === 'view-projects-list') this.renderProjectsList();
+            if(viewId === 'view-transactions') this.renderTransactions();
+        },
 
     formatMoney(amount) {
         return parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
