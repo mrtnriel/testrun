@@ -674,31 +674,31 @@ const app = {
 
     // --- Ledger / History ---
     renderTransactions() {
-        const listDiv = document.getElementById('ledger-list');
-        listDiv.innerHTML = '';
-        
-        if (this.transactions.length === 0) {
-            listDiv.innerHTML = '<p class="empty-state">No recorded payments yet.</p>';
-            return;
-        }
+            const listDiv = document.getElementById('ledger-list');
+            listDiv.innerHTML = '';
+            
+            if (this.transactions.length === 0) {
+                listDiv.innerHTML = '<p class="empty-state">No recorded payments yet.</p>';
+                return;
+            }
 
-        // Updated for proper spacing and alignment match as requested
-        this.transactions.forEach(t => {
-            listDiv.innerHTML += `
-                <div class="ledger-item">
-                    <div class="flex-1 min-w-0 pr-12">
-                        <span class="tx-items text-truncate">${t.projName}</span>
-                        <span class="tx-meta">${t.milestoneName} • Ref: ${t.id}</span>
-                        <span class="tx-meta mt-4">${new Date(t.date).toLocaleString()}</span>
+            this.transactions.forEach(t => {
+                // Each transaction is now its own standalone card
+                listDiv.innerHTML += `
+                    <div class="card p-20 mb-16 flex-row justify-between align-center gap-12">
+                        <div class="flex-1 min-w-0 pr-12">
+                            <span class="font-600 color-main block mb-4 text-truncate text-lg">${t.projName}</span>
+                            <span class="text-xs text-muted block line-height-15">${t.milestoneName} • Ref: ${t.id}</span>
+                            <span class="text-xs text-muted block mt-8">${new Date(t.date).toLocaleString()}</span>
+                        </div>
+                        <div class="flex-column flex-shrink-0" style="align-items: flex-end; gap: 12px;">
+                            <span class="font-700 color-success text-lg">₱${this.formatMoney(t.amount)}</span>
+                            <button class="btn-outline btn-sm" onclick="app.openInvoiceModal('${t.id}')">Invoice</button>
+                        </div>
                     </div>
-                    <div class="flex-column text-right flex-shrink-0" style="align-items: flex-end;">
-                        <span class="tx-amount">₱${this.formatMoney(t.amount)}</span>
-                        <button class="btn-outline btn-sm" onclick="app.openInvoiceModal('${t.id}')">Invoice</button>
-                    </div>
-                </div>
-            `;
-        });
-    },
+                `;
+            });
+        },
 
     // --- Invoice Modal Functions ---
     openInvoiceModal(txnId) {
