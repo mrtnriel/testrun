@@ -91,12 +91,10 @@ const app = {
         if (viewId === 'view-wallet') {
             header.classList.remove('sub-header');
             backBtn.classList.add('hidden');
-            // Hide the G-Milestone title exclusively on the Dashboard as requested
             if (title) title.style.display = 'none'; 
             if (mobileNav) mobileNav.style.display = 'flex';
         } else {
             header.classList.add('sub-header');
-            // Ensure title displays on all other non-dashboard pages
             if (title) title.style.display = 'flex'; 
             if (mobileNav) mobileNav.style.display = isSubView ? 'none' : 'flex';
             
@@ -684,15 +682,17 @@ const app = {
             return;
         }
 
+        // Updated for proper spacing and alignment match as requested
         this.transactions.forEach(t => {
             listDiv.innerHTML += `
                 <div class="ledger-item">
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 pr-12">
                         <span class="tx-items text-truncate">${t.projName}</span>
-                        <span class="tx-meta">${t.milestoneName} • Ref: ${t.id} <br> ${new Date(t.date).toLocaleString()}</span>
+                        <span class="tx-meta">${t.milestoneName} • Ref: ${t.id}</span>
+                        <span class="tx-meta mt-4">${new Date(t.date).toLocaleString()}</span>
                     </div>
-                    <div class="flex-column text-right">
-                        <div class="tx-amount">₱${this.formatMoney(t.amount)}</div>
+                    <div class="flex-column text-right flex-shrink-0" style="align-items: flex-end;">
+                        <span class="tx-amount">₱${this.formatMoney(t.amount)}</span>
                         <button class="btn-outline btn-sm" onclick="app.openInvoiceModal('${t.id}')">Invoice</button>
                     </div>
                 </div>
