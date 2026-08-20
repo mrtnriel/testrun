@@ -45,7 +45,7 @@ const app = {
                 const targetId = item.getAttribute('data-target');
                 if (!targetId) return;
                 
-                this.history = []; // Clear history on top-level navigation
+                this.history = []; 
                 this.navigateTo(targetId);
             });
         });
@@ -58,7 +58,6 @@ const app = {
         
         this.currentViewId = viewId;
 
-        // UI State Updates for Navigation Active Classes
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
         document.querySelectorAll(`.nav-item[data-target="${viewId}"]`).forEach(activeNav => {
             activeNav.classList.add('active');
@@ -77,12 +76,10 @@ const app = {
     },
 
     switchView(viewId) {
-        // Hide all views
         document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
         const target = document.getElementById(viewId);
         if (target) target.classList.remove('hidden');
 
-        // Manage UI headers/footers based on the view
         const isSubView = target && target.classList.contains('sub-view');
         const header = document.getElementById('appHeader');
         const backBtn = document.getElementById('globalBackBtn');
@@ -106,15 +103,13 @@ const app = {
                 backBtn.classList.add('hidden');
             }
             
-            // Set contextual header titles
-            if(viewId === 'view-projects-list') title.innerText = 'Projects';
+            if(viewId === 'view-projects-list') title.innerText = 'Orders';
             if(viewId === 'view-transactions') title.innerText = 'Payment History';
-            if(viewId === 'view-project-create') title.innerText = 'New Project';
-            if(viewId === 'view-project-detail') title.innerText = 'Project Details';
+            if(viewId === 'view-project-create') title.innerText = 'New Order';
+            if(viewId === 'view-project-detail') title.innerText = 'Order Details';
             if(viewId === 'view-checkout') title.innerText = 'Payment';
         }
 
-        // Fire rendering logic
         if(viewId === 'view-wallet') this.updateDashboard();
         if(viewId === 'view-projects-list') this.renderProjectsList();
         if(viewId === 'view-transactions') this.renderTransactions();
@@ -124,7 +119,7 @@ const app = {
         return parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
 
-    // --- Core Logic: Centralized Penalty Calculation ---
+    // --- Centralized Penalty Calculation ---
     getMilestoneFinancials(projId, milestoneIdx) {
         const p = this.projects.find(x => x.id === projId);
         const m = p.milestones[milestoneIdx];
@@ -138,7 +133,6 @@ const app = {
             isOverdue = true;
             if (p.penalty && p.penalty.amount > 0) {
                 if (p.penalty.type === 'percent') {
-                    // Penalty percentage based on the remaining base balance
                     let remainingBase = p.total - p.milestones.filter(x => x.paid).reduce((sum, x) => sum + x.amount, 0);
                     penaltyAmount = remainingBase * (p.penalty.amount / 100);
                 } else {
@@ -155,7 +149,7 @@ const app = {
         };
     },
 
-    // --- Core Logic: Dashboard ---
+    // --- Dashboard Processing ---
     updateDashboard() {
         let totalValue = 0, collected = 0, activeCount = 0;
 
@@ -166,10 +160,10 @@ const app = {
             p.milestones.forEach((m, mIdx) => {
                 if (m.paid) {
                     pCollected += (m.amountPaid || m.amount);
-                    pTotal += (m.penaltyPaid || 0); // Include paid penalties in the project's total realized value
+                    pTotal += (m.penaltyPaid || 0);
                 } else {
                     const fin = this.getMilestoneFinancials(p.id, mIdx);
-                    pTotal += fin.penaltyAmount; // Include active penalties in the project's overall value
+                    pTotal += fin.penaltyAmount; 
                 }
             });
 
@@ -192,7 +186,6 @@ const app = {
     setDashboardFilter(filter) {
         this.currentDashboardFilter = filter;
         
-        // Update active class on filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelector(`.filter-btn[data-filter="${filter}"]`).classList.add('active');
         
@@ -204,11 +197,25 @@ const app = {
         let html = '<div class="flex-column gap-12">';
         let projectsToShow = [];
 
-        // Apply filters
+        // Apply strict filters based on order context requirements
         if (this.currentDashboardFilter === 'all') {
             projectsToShow = this.projects.filter(p => p.status !== 'DRAFT');
         } else if (this.currentDashboardFilter === 'new') {
-            projectsToShow = [...this.projects].filter(p => p.status !== 'DRAFT').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+            projectsToShow = this.projects.filter(p => {
+                // Must be specifically PAYMENT_REQUESTED, neither paid, in progress, nor completed.
+                if (p.status !== 'PAYMENT_REQUESTED' && p.status !== 'FINAL_PAYMENT_REQUESTED') return false;
+                
+                // Exclude if it is overdue
+                let isOverdue = false;
+                p.milestones.forEach((m, idx) => {
+                    if (!m.paid && this.getMilestoneFinancials(p.id, idx).isOverdue) {
+                        isOverdue = true;
+                    }
+                });
+                return !isOverdue;
+            }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            html = `<h3 class="text-sm font-700 text-muted mb-12 uppercase mt-8">New Orders</h3>` + html;
+            
         } else if (this.currentDashboardFilter === 'almost') {
             projectsToShow = this.projects.filter(p => {
                 if (p.status === 'COMPLETED' || p.status === 'DRAFT') return false;
@@ -224,6 +231,8 @@ const app = {
                 let pctB = b.milestones.filter(m => m.paid).reduce((s, m) => s + m.amount, 0) / b.total;
                 return pctB - pctA; 
             }).slice(0, 5);
+            html = `<h3 class="text-sm font-700 text-muted mb-12 uppercase mt-8">Almost Completed</h3>` + html;
+            
         } else if (this.currentDashboardFilter === 'overdue') {
             projectsToShow = this.projects.filter(p => {
                 if (p.status === 'COMPLETED' || p.status === 'DRAFT') return false;
@@ -233,10 +242,11 @@ const app = {
                     return fin.isOverdue && fin.penaltyAmount > 0;
                 });
             });
+            html = `<h3 class="text-sm font-700 text-muted mb-12 uppercase mt-8">Action Required</h3>` + html;
         }
 
         if (projectsToShow.length === 0) {
-            html += `<div class="empty-state">No projects found.</div>`;
+            html += `<div class="empty-state">No orders found for this category.</div>`;
         } else {
             projectsToShow.forEach(p => {
                 let isOverdue = false;
@@ -257,7 +267,6 @@ const app = {
                 });
 
                 if (isOverdue && (this.currentDashboardFilter === 'overdue' || this.currentDashboardFilter === 'all')) {
-                    // Render Red Overdue Card
                     html += `
                         <div class="card p-16 border-danger bg-danger-light interactive" onclick="app.openProjectDetail('${p.id}')">
                             <div class="flex-row justify-between align-center mb-12">
@@ -279,7 +288,6 @@ const app = {
                         </div>
                     `;
                 } else {
-                    // Render Standard Dashboard Card
                     let pPaid = p.milestones.filter(m => m.paid).reduce((sum, m) => sum + (m.amountPaid || m.amount), 0);
                     let pTotal = p.total;
                     p.milestones.forEach((m, idx) => {
@@ -298,12 +306,16 @@ const app = {
                                 </div>
                                 <span class="badge ${statusObj.class} flex-shrink-0">${statusObj.text}</span>
                             </div>
-                            <div class="flex-row justify-between align-center mb-4">
-                                <span class="text-xs font-600 color-main">₱${this.formatMoney(pTotal)}</span>
-                                <span class="text-xs font-700 color-blue">${pct}%</span>
+                            <div class="flex-row justify-between align-center mb-8">
+                                <span class="text-xs font-600 color-main">Amount: ₱${this.formatMoney(pTotal)}</span>
+                                <span class="text-xs font-700 color-blue">${pct}% Paid</span>
                             </div>
-                            <div class="progress-bar-container">
+                            <div class="progress-bar-container mb-12">
                                 <div class="progress-bar-fill" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="text-xs text-muted border-top pt-8 flex-row justify-between">
+                                <span>Ordered: ${new Date(p.createdAt).toLocaleDateString()}</span>
+                                <span>Due: ${new Date(p.expectedDate).toLocaleDateString()}</span>
                             </div>
                         </div>
                     `;
@@ -315,7 +327,7 @@ const app = {
         container.innerHTML = html;
     },
 
-    // --- Core Logic: Wizard Flow & Create Project ---
+    // --- Wizard Flow & Create Project ---
     showCreateProject() {
         document.getElementById('create-project-form').reset();
         document.getElementById('milestones-container').innerHTML = '';
@@ -569,7 +581,7 @@ const app = {
         const penaltyWhen = document.getElementById('projPenaltyWhen').value;
 
         const newProj = {
-            id: 'PRJ-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+            id: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
             customer: {
                 name: document.getElementById('custName').value,
                 mobile: document.getElementById('custMobile').value,
@@ -590,13 +602,13 @@ const app = {
         this.openProjectDetail(newProj.id);
     },
 
-    // --- Core Logic: Project Listing & Detail ---
+    // --- Order Listing & Detail ---
     renderProjectsList() {
         const grid = document.getElementById('projects-grid');
         grid.innerHTML = '';
 
         if(this.projects.length === 0) {
-            grid.innerHTML = `<div class="empty-state">No projects found. Create one to get started.</div>`;
+            grid.innerHTML = `<div class="empty-state">No orders found. Create one to get started.</div>`;
             return;
         }
 
@@ -770,7 +782,7 @@ const app = {
         
         const breakdown = document.getElementById('checkout-breakdown');
         let breakdownHtml = `
-            <div class="flex-row justify-between mb-8"><span class="text-muted">Project:</span> <strong class="text-right">${p.name}</strong></div>
+            <div class="flex-row justify-between mb-8"><span class="text-muted">Order:</span> <strong class="text-right">${p.name}</strong></div>
             <div class="flex-row justify-between mb-8"><span class="text-muted">Customer:</span> <strong class="text-right">${p.customer.name}</strong></div>
             <div class="flex-row justify-between"><span class="text-muted">Milestone:</span> <strong class="text-right">${m.name}</strong></div>
         `;
@@ -962,7 +974,7 @@ const app = {
             <div class="invoice-row"><span>Date:</span> <strong>${new Date(t.date).toLocaleString()}</strong></div>
             <div class="invoice-divider"></div>
             <div class="invoice-row"><span>Customer:</span> <strong>${t.customerName || 'N/A'}</strong></div>
-            <div class="invoice-row"><span>Project:</span> <strong>${t.projName}</strong></div>
+            <div class="invoice-row"><span>Order:</span> <strong>${t.projName}</strong></div>
             <div class="invoice-row"><span>Milestone:</span> <strong>${t.milestoneName}</strong></div>
             <div class="invoice-divider"></div>
             ${financialRows}
@@ -978,64 +990,89 @@ const app = {
         document.getElementById('invoiceModal').classList.add('hidden');
     },
 
-    // --- Seed Data ---
+    // --- Seed Data Custom Cakes ---
     seedData() {
         this.projects = [
             {
-                id: 'PRJ-M1001',
-                customer: { name: "Maria Clara", mobile: "09170001234", email: "maria@example.com" },
-                name: "Custom Corporate Giveaways",
-                total: 25000,
-                expectedDate: "2026-09-15",
-                status: "IN_PROGRESS",
-                createdAt: new Date().toISOString(),
-                milestones: [
-                    { name: "50% Downpayment", amount: 12500, date: new Date().toISOString(), requested: true, paid: true, paidDate: new Date(Date.now() - 86400000).toISOString() },
-                    { name: "50% Upon Delivery", amount: 12500, date: "2026-09-15", requested: false, paid: false, paidDate: null }
-                ],
-                penalty: { type: "percent", amount: 2, when: "1 day after due date" }
-            },
-            {
-                id: 'PRJ-M1002',
-                customer: { name: "Juan Dela Cruz", mobile: "09180005678", email: "" },
-                name: "Wedding Event Catering",
-                total: 50000,
-                expectedDate: "2026-10-10",
+                id: 'ORD-CAKE1',
+                customer: { name: "Sofia Rivera", mobile: "09170001234", email: "sofia@example.com" },
+                name: "Birthday Chocolate Cake",
+                total: 1500,
+                expectedDate: "2026-08-25",
                 status: "PAYMENT_REQUESTED",
-                createdAt: new Date().toISOString(),
+                createdAt: "2026-08-20T10:00:00.000Z",
                 milestones: [
-                    { name: "Reservation Fee", amount: 10000, date: new Date().toISOString(), requested: true, paid: false, paidDate: null },
-                    { name: "Progress Payment", amount: 20000, date: "2026-09-20", requested: false, paid: false, paidDate: null },
-                    { name: "Final Balance", amount: 20000, date: "2026-10-10", requested: false, paid: false, paidDate: null }
-                ]
+                    { name: "Full Payment", amount: 1500, date: "2026-08-25", requested: true, paid: false, paidDate: null }
+                ],
+                penalty: { type: "percent", amount: 0, when: "" }
             },
             {
-                id: 'PRJ-M1003',
-                customer: { name: "Gabriel Martin R. Manalo", mobile: "09190001111", email: "gabriel@pup.edu.ph" },
-                name: "Network Hardware Procurement",
-                total: 80000,
-                expectedDate: "2026-07-15",
+                id: 'ORD-CAKE2',
+                customer: { name: "Miguel Reyes", mobile: "09180005678", email: "" },
+                name: "Custom Wedding Cake",
+                total: 4500,
+                expectedDate: "2026-09-10",
                 status: "PARTIALLY_PAID",
-                createdAt: new Date("2026-06-01").toISOString(),
+                createdAt: "2026-08-01T14:30:00.000Z",
                 milestones: [
-                    { name: "Initial Deposit", amount: 40000, date: "2026-06-01", requested: true, paid: true, paidDate: "2026-06-05T12:00:00Z", amountPaid: 40000, penaltyPaid: 0 },
-                    { name: "Final Equipment Delivery", amount: 40000, date: "2026-07-15", requested: true, paid: false, paidDate: null }
+                    { name: "Downpayment", amount: 2500, date: "2026-08-01", requested: true, paid: true, paidDate: "2026-08-01T15:00:00.000Z", amountPaid: 2500, penaltyPaid: 0 },
+                    { name: "Final Balance", amount: 2000, date: "2026-09-10", requested: false, paid: false, paidDate: null }
                 ],
-                penalty: { type: "fixed", amount: 1500, when: "1 day after due date" }
+                penalty: { type: "fixed", amount: 500, when: "1 day after due date" }
+            },
+            {
+                id: 'ORD-CAKE3',
+                customer: { name: "Isabella Santos", mobile: "09190001111", email: "isabella@example.com" },
+                name: "Princess-Themed Cake",
+                total: 2200,
+                expectedDate: "2026-08-18",
+                status: "PARTIALLY_PAID",
+                createdAt: "2026-08-05T09:15:00.000Z",
+                milestones: [
+                    { name: "Downpayment", amount: 1100, date: "2026-08-05", requested: true, paid: true, paidDate: "2026-08-05T10:00:00.000Z", amountPaid: 1100, penaltyPaid: 0 },
+                    { name: "Final Payment", amount: 1100, date: "2026-08-18", requested: true, paid: false, paidDate: null } // Overdue based on Aug 21, 2026 Context
+                ],
+                penalty: { type: "fixed", amount: 200, when: "1 day after due date" }
+            },
+            {
+                id: 'ORD-CAKE4',
+                customer: { name: "Daniel Garcia", mobile: "09201112222", email: "daniel@example.com" },
+                name: "Minimalist Bento Cake",
+                total: 850,
+                expectedDate: "2026-08-19",
+                status: "COMPLETED",
+                createdAt: "2026-08-15T16:45:00.000Z",
+                milestones: [
+                    { name: "Full Payment", amount: 850, date: "2026-08-19", requested: true, paid: true, paidDate: "2026-08-19T11:30:00.000Z", amountPaid: 850, penaltyPaid: 0 }
+                ],
+                penalty: { type: "percent", amount: 0, when: "" }
+            },
+            {
+                id: 'ORD-CAKE5',
+                customer: { name: "Elena Cruz", mobile: "09334445555", email: "elena@example.com" },
+                name: "Vintage Heart Cake",
+                total: 1800,
+                expectedDate: "2026-08-22",
+                status: "PAYMENT_REQUESTED",
+                createdAt: "2026-08-18T11:20:00.000Z",
+                milestones: [
+                    { name: "Full Payment", amount: 1800, date: "2026-08-22", requested: true, paid: false, paidDate: null }
+                ],
+                penalty: { type: "percent", amount: 10, when: "1 day after due date" }
             }
         ];
 
         this.transactions = [
             {
-                id: 'TXN-A1B2C3D',
-                projName: "Custom Corporate Giveaways",
-                customerName: "Maria Clara",
-                milestoneName: "50% Downpayment",
-                amount: 12500,
-                originalAmount: 12500,
+                id: 'TXN-C3D4E5F',
+                projName: "Minimalist Bento Cake",
+                customerName: "Daniel Garcia",
+                milestoneName: "Full Payment",
+                amount: 850,
+                originalAmount: 850,
                 penaltyAmount: 0,
                 isOverdue: false,
-                date: new Date(Date.now() - 86400000).toISOString()
+                date: "2026-08-19T11:30:00.000Z"
             }
         ];
     }

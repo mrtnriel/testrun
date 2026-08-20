@@ -22,7 +22,7 @@
                 </a>
                 <a href="#" class="nav-item" data-target="view-projects-list">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                    <span class="nav-text">Projects</span>
+                    <span class="nav-text">Orders</span>
                 </a>
                 <a href="#" class="nav-item" data-target="view-transactions">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
@@ -70,7 +70,7 @@
                                 <span class="summary-value color-orange">₱<span id="dash-outstanding">0.00</span></span>
                             </div>
                             <div class="card summary-card interactive" onclick="app.navigateTo('view-projects-list')">
-                                <span class="summary-label color-blue">Active Projects</span>
+                                <span class="summary-label color-blue">Active Orders</span>
                                 <div class="flex-row justify-between align-center">
                                     <span class="summary-value color-blue" id="dash-active-count">0</span>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
@@ -80,8 +80,8 @@
 
                         <!-- Dynamic Dashboard Filter Bar -->
                         <div class="dashboard-filters flex-row gap-8 mb-16 pb-8">
-                            <button class="filter-btn active" data-filter="all" onclick="app.setDashboardFilter('all')">All</button>
-                            <button class="filter-btn" data-filter="new" onclick="app.setDashboardFilter('new')">Newly Created</button>
+                            <button class="filter-btn active" data-filter="all" onclick="app.setDashboardFilter('all')">All Orders</button>
+                            <button class="filter-btn" data-filter="new" onclick="app.setDashboardFilter('new')">New Orders</button>
                             <button class="filter-btn" data-filter="almost" onclick="app.setDashboardFilter('almost')">Almost Completed</button>
                             <button class="filter-btn" data-filter="overdue" onclick="app.setDashboardFilter('overdue')">Overdue Payments</button>
                         </div>
@@ -94,8 +94,8 @@
                 <!-- VIEW 2: PROJECTS LIST -->
                 <div id="view-projects-list" class="app-view hidden content-padding mt-24">
                     <div class="flex-row justify-between align-center mb-16">
-                        <h1 class="page-title m-0">Projects</h1>
-                        <button class="btn-primary btn-sm" onclick="app.showCreateProject()">+ New Project</button>
+                        <h1 class="page-title m-0">All Orders</h1>
+                        <button class="btn-primary btn-sm" onclick="app.showCreateProject()">+ New Order</button>
                     </div>
                     <div id="projects-grid" class="projects-list-container"></div>
                 </div>
@@ -124,9 +124,9 @@
 
                                 <div class="wizard-step" id="wizard-step-2">
                                     <h3 class="step-title font-600 mb-16">Order Details</h3>
-                                    <div class="form-group"><label>Project Name *</label><input type="text" id="projName" class="form-control" required></div>
+                                    <div class="form-group"><label>Cake / Order Name *</label><input type="text" id="projName" class="form-control" required></div>
                                     <div class="form-group"><label>Total Amount (₱) *</label><input type="number" id="projTotal" class="form-control" min="1" step="0.01" required onchange="app.generateMilestones()"></div>
-                                    <div class="form-group"><label>Expected Completion *</label><input type="date" id="projDate" class="form-control" required onchange="app.generateMilestones()"></div>
+                                    <div class="form-group"><label>Expected Delivery/Pickup *</label><input type="date" id="projDate" class="form-control" required onchange="app.generateMilestones()"></div>
                                     <div class="flex-row gap-12 mt-24">
                                         <button type="button" class="btn-secondary flex-1" onclick="app.prevWizardStep(2)">Back</button>
                                         <button type="button" class="btn-primary flex-1" onclick="app.nextWizardStep(2)">Next Step</button>
@@ -182,7 +182,7 @@
                                     
                                     <div class="flex-row gap-12 mt-24">
                                         <button type="button" class="btn-secondary flex-1" onclick="app.prevWizardStep(5)">Back</button>
-                                        <button type="button" class="btn-primary flex-1 bg-success" id="btn-save-project" onclick="app.handleCreateProject(event)">Create Project</button>
+                                        <button type="button" class="btn-primary flex-1 bg-success" id="btn-save-project" onclick="app.handleCreateProject(event)">Create Order</button>
                                     </div>
                                 </div>
                             </form>
@@ -195,7 +195,7 @@
                     <div class="card p-16 mb-16">
                         <div class="flex-row justify-between align-center border-bottom pb-12 mb-12">
                             <div class="flex-1 min-w-0 pr-12">
-                                <h2 class="font-700 text-lg m-0 mb-4 text-truncate" id="det-name">Project Name</h2>
+                                <h2 class="font-700 text-lg m-0 mb-4 text-truncate" id="det-name">Order Name</h2>
                                 <div class="text-sm font-600 color-main text-truncate" id="det-customer">Customer</div>
                                 <div class="text-xs text-muted" id="det-mobile">Mobile</div>
                             </div>
@@ -217,7 +217,7 @@
                     </div>
 
                     <div class="card p-16 mb-16 bg-success-light border-success" id="ready-action-card" style="display:none;">
-                        <p class="text-sm mb-12 font-600">Order preparation complete?</p>
+                        <p class="text-sm mb-12 font-600">Cake preparation complete?</p>
                         <button class="btn-primary full-width bg-success" onclick="app.markOrderReady()">Mark Order Ready</button>
                     </div>
 
@@ -258,7 +258,7 @@
                 </a>
                 <a href="#" class="nav-item" data-target="view-projects-list">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                    <span>Projects</span>
+                    <span>Orders</span>
                 </a>
                 <a href="#" class="nav-item" data-target="view-transactions">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
@@ -286,12 +286,12 @@
         <div class="modal-surface p-24 text-center">
             <div id="createStateLoading" class="state-container">
                 <div class="spinner mx-auto mb-16"></div>
-                <h3 class="font-700">Creating Project...</h3>
+                <h3 class="font-700">Creating Order...</h3>
             </div>
             <div id="createStateSuccess" class="state-container hidden">
                 <div class="icon-circle bg-success mx-auto mb-16"><svg width="28" height="28" stroke="white" stroke-width="3" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
                 <h3 class="font-700 mb-8">Success!</h3>
-                <p class="text-sm text-muted">Redirecting to project dashboard...</p>
+                <p class="text-sm text-muted">Redirecting to order dashboard...</p>
             </div>
             <div id="createStateError" class="state-container hidden">
                 <h3 class="font-700 color-orange mb-16">Failed to Create</h3>
