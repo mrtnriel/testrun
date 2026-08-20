@@ -78,11 +78,16 @@
                             </div>
                         </div>
 
-                        <!-- Dynamic Dashboard Sections -->
-                        <div id="dash-overdue-container"></div>
-                        <div id="dash-almost-completed-container"></div>
-                        <div id="dash-new-projects-container" class="mb-24"></div>
-
+                        <!-- Dynamic Dashboard Filter Bar -->
+                        <div class="dashboard-filters flex-row gap-8 mb-16 pb-8">
+                            <button class="filter-btn active" data-filter="all" onclick="app.setDashboardFilter('all')">All</button>
+                            <button class="filter-btn" data-filter="new" onclick="app.setDashboardFilter('new')">Newly Created</button>
+                            <button class="filter-btn" data-filter="almost" onclick="app.setDashboardFilter('almost')">Almost Completed</button>
+                            <button class="filter-btn" data-filter="overdue" onclick="app.setDashboardFilter('overdue')">Overdue Payments</button>
+                        </div>
+                        
+                        <!-- Dynamic Dashboard List Container -->
+                        <div id="dash-filtered-projects-container" class="mb-24"></div>
                     </div>
                 </div>
 
