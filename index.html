@@ -3,211 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>G-Milestone</title>
+    <title>G-Milestone Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/Gcash-Logo.png">
 </head>
 <body>
-    <div class="app-container">
-        
-        <!-- Mobile App Header -->
-        <header class="app-header" id="appHeader">
-            <div class="header-left">
-                <button class="back-btn hidden" id="globalBackBtn" onclick="app.navigateBack()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                </button>
-                <div class="brand-logo" id="headerTitle">
-                    <span class="logo-circle">G</span> Milestone
-                </div>
+    <div class="app-wrapper">
+        <!-- Desktop Sidebar (Hidden on Mobile) -->
+        <aside class="desktop-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span class="logo-circle">G</span>
+                <span class="brand-text">G-Milestone <span class="logo-badge">BETA</span></span>
             </div>
-            <div class="header-right" id="headerProfile">
-                <div class="user-avatar">JS</div>
-            </div>
-        </header>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-target="view-wallet">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M21 12H17"/><path d="M17 12a2 2 0 0 1-2-2 2 2 0 0 1 2-2"/></svg>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-target="view-projects-list">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    <span class="nav-text">Projects</span>
+                </a>
+                <a href="#" class="nav-item" data-target="view-transactions">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                    <span class="nav-text">History</span>
+                </a>
+            </nav>
+        </aside>
 
-        <main class="main-content">
-            
-            <!-- VIEW 1: DASHBOARD -->
-            <div id="view-wallet" class="app-view active">
-                <div class="blue-header-bg">
-                    <div class="wallet-details">GCash Business Account</div>
-                    <div class="balance-label">Total Collected Payments</div>
-                    <div class="balance-amount"><span class="currency">₱</span> <span id="dash-collected">0.00</span></div>
+        <div class="app-main">
+            <!-- Global Top Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <div class="brand-logo mobile-only">
+                        <span class="logo-circle">G</span>
+                    </div>
                 </div>
-
-                <div class="content-padding view-body-pull-up">
-                    <div class="summary-grid">
-                        <div class="card summary-card">
-                            <div class="small-card-label">Outstanding Balance</div>
-                            <div class="small-card-amount color-orange">₱ <span id="dash-outstanding">0.00</span></div>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <div class="user-avatar">JS</div>
+                        <div class="user-info desktop-only">
+                            <div class="user-name">John Smith</div>
+                            <div class="user-email">johnsmith69@gmail.com</div>
                         </div>
-                        <div class="card summary-card">
-                            <div class="small-card-label">Total Project Value</div>
-                            <div class="small-card-amount">₱ <span id="dash-total-value">0.00</span></div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content-area">
+                <!-- VIEW 1: DASHBOARD -->
+                <div id="view-wallet" class="app-view active">
+                    <div class="fintech-header-bg">
+                        <h1 class="page-title text-white">Business Overview</h1>
+                        <p class="text-white opacity-80 text-sm">GCash Business Account</p>
+                        
+                        <div class="balance-showcase mt-24">
+                            <span class="balance-label text-white">Total Collected Payments</span>
+                            <div class="balance-amount text-white"><span class="currency">₱</span> <span id="dash-collected">0.00</span></div>
                         </div>
                     </div>
 
-                    <div class="action-grid mt-16">
-                        <button class="action-btn" onclick="app.showCreateProject()">
-                            <div class="action-icon bg-primary"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
-                            <span>New Project</span>
-                        </button>
-                        <button class="action-btn" onclick="app.navigateTo('view-projects-list')">
-                            <div class="action-icon bg-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg></div>
-                            <span>Active (<span id="dash-active-count">0</span>)</span>
-                        </button>
+                    <div class="content-padding pull-up">
+                        <div class="card p-16 mb-24 flex-row justify-between align-center">
+                            <span class="font-600 text-sm">Need to request a payment?</span>
+                            <button class="btn-primary btn-sm" onclick="app.showCreateProject()">+ New Project</button>
+                        </div>
+
+                        <div class="summary-grid">
+                            <div class="card summary-card">
+                                <span class="summary-label">Total Value</span>
+                                <span class="summary-value">₱<span id="dash-total-value">0.00</span></span>
+                            </div>
+                            <div class="card summary-card">
+                                <span class="summary-label color-orange">Outstanding</span>
+                                <span class="summary-value color-orange">₱<span id="dash-outstanding">0.00</span></span>
+                            </div>
+                            <div class="card summary-card interactive" onclick="app.navigateTo('view-projects-list')" role="button">
+                                <span class="summary-label color-blue">Active Projects</span>
+                                <div class="flex-row justify-between align-center">
+                                    <span class="summary-value color-blue" id="dash-active-count">0</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- VIEW 2: PROJECTS LIST -->
-            <div id="view-projects-list" class="app-view hidden content-padding mt-16">
-                <div class="d-flex justify-between align-center mb-16">
-                    <h2 class="section-title m-0">All Projects</h2>
-                    <button class="btn-primary btn-sm rounded-pill" onclick="app.showCreateProject()">+ New</button>
+                <!-- VIEW 2: PROJECTS LIST -->
+                <div id="view-projects-list" class="app-view hidden content-padding mt-24">
+                    <div class="flex-row justify-between align-center mb-16">
+                        <button class="btn-icon mobile-only" onclick="app.navigateBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+                        <h1 class="page-title m-0">Projects</h1>
+                        <button class="btn-primary btn-sm" onclick="app.showCreateProject()">+ New</button>
+                    </div>
+                    <div id="projects-grid" class="projects-list-container"></div>
                 </div>
-                <div id="projects-grid" class="projects-list"></div>
-            </div>
 
-            <!-- VIEW 3: CREATE WIZARD -->
-            <div id="view-project-create" class="app-view hidden content-padding mt-16 sub-view">
-                <div class="card p-0 overflow-hidden">
-                    <div class="wizard-progress">
-                        <div class="progress-step active" id="indicator-step-1">1</div>
-                        <div class="progress-step" id="indicator-step-2">2</div>
-                        <div class="progress-step" id="indicator-step-3">3</div>
-                        <div class="progress-step" id="indicator-step-4">4</div>
-                        <div class="progress-step" id="indicator-step-5">5</div>
+                <!-- VIEW 3: CREATE PROJECT WIZARD (IDs Preserved) -->
+                <div id="view-project-create" class="app-view hidden content-padding mt-24">
+                    <div class="flex-row align-center mb-16 gap-12">
+                        <button class="btn-icon" onclick="app.navigateBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+                        <h1 class="page-title m-0">New Project</h1>
                     </div>
-
-                    <div class="p-16">
-                        <form id="create-project-form" onsubmit="event.preventDefault();">
-                            <!-- Steps 1 to 5 (Simplified for brevity, structural identical to original[cite: 1] but using stacked layout) -->
-                            <div class="wizard-step active" id="wizard-step-1">
-                                <h3 class="step-title">Customer Details</h3>
-                                <div class="form-group"><label>Name *</label><input type="text" id="custName" class="form-control" required></div>
-                                <div class="form-group"><label>Mobile *</label><input type="tel" id="custMobile" class="form-control" required></div>
-                                <div class="form-group"><label>Email</label><input type="email" id="custEmail" class="form-control"></div>
-                                <button type="button" class="btn-primary full-width mt-24 rounded-pill" onclick="app.nextWizardStep(1)">Next</button>
-                            </div>
-
-                            <div class="wizard-step" id="wizard-step-2">
-                                <h3 class="step-title">Order Details</h3>
-                                <div class="form-group"><label>Project Name *</label><input type="text" id="projName" class="form-control" required></div>
-                                <div class="form-group"><label>Amount (₱) *</label><input type="number" id="projTotal" class="form-control" min="1" step="0.01" required onchange="app.generateMilestones()"></div>
-                                <div class="form-group"><label>Completion Date *</label><input type="date" id="projDate" class="form-control" required onchange="app.generateMilestones()"></div>
-                                <div class="d-flex gap-12 mt-24">
-                                    <button type="button" class="btn-secondary full-width rounded-pill" onclick="app.prevWizardStep(2)">Back</button>
-                                    <button type="button" class="btn-primary full-width rounded-pill" onclick="app.nextWizardStep(2)">Next</button>
-                                </div>
-                            </div>
-
-                            <div class="wizard-step" id="wizard-step-3">
-                                <h3 class="step-title">Milestones</h3>
-                                <div class="form-group mb-16">
-                                    <label>Splits</label>
-                                    <input type="number" id="projMilestoneCount" class="form-control" min="1" max="12" value="2" required onchange="app.generateMilestones()">
-                                </div>
-                                <div id="milestones-container" class="milestones-editor"></div>
-                                <input type="hidden" id="projMilestoneType" value="equal">
-                                <div class="d-flex gap-12 mt-24">
-                                    <button type="button" class="btn-secondary full-width rounded-pill" onclick="app.prevWizardStep(3)">Back</button>
-                                    <button type="button" class="btn-primary full-width rounded-pill" id="btn-next-step-3" onclick="app.nextWizardStep(3)">Next</button>
-                                </div>
-                            </div>
-
-                            <div class="wizard-step" id="wizard-step-4">
-                                <h3 class="step-title">Penalty (Optional)</h3>
-                                <div class="form-group"><label>Type</label><select id="projPenaltyType" class="form-control"><option value="fixed">Fixed (₱)</option></select></div>
-                                <div class="form-group"><label>Value</label><input type="number" id="projPenaltyValue" class="form-control" min="0"></div>
-                                <div class="d-flex gap-12 mt-24">
-                                    <button type="button" class="btn-secondary full-width rounded-pill" onclick="app.prevWizardStep(4)">Back</button>
-                                    <button type="button" class="btn-primary full-width rounded-pill" onclick="app.nextWizardStep(4)">Review</button>
-                                </div>
-                            </div>
-
-                            <div class="wizard-step" id="wizard-step-5">
-                                <h3 class="step-title">Review & Create</h3>
-                                <div class="review-block card bg-light mb-16"><p id="rev-cust" class="text-sm m-0"></p></div>
-                                <div class="review-block card bg-light mb-16"><p id="rev-order" class="text-sm m-0"></p></div>
-                                <div class="d-flex gap-12 mt-24">
-                                    <button type="button" class="btn-secondary full-width rounded-pill" onclick="app.prevWizardStep(5)">Back</button>
-                                    <button type="button" class="btn-primary full-width rounded-pill" id="btn-save-project" onclick="app.handleCreateProject(event)">Create</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW 4: PROJECT DETAIL -->
-            <div id="view-project-detail" class="app-view hidden content-padding mt-16 sub-view">
-                <div class="card mb-16">
-                    <div class="d-flex justify-between align-center mb-8">
-                        <h2 class="project-title m-0" id="det-name">Project</h2>
-                        <div id="det-status-badge" class="status-badge">STATUS</div>
-                    </div>
-                    <p class="text-sm text-muted m-0"><span id="det-customer">Name</span> • <span id="det-mobile">Mobile</span></p>
                     
-                    <div class="progress-stats mt-16 pt-16 border-top">
-                        <div class="stat-box"><span class="stat-label">Total</span><span class="stat-val" id="det-total">₱0.00</span></div>
-                        <div class="stat-box"><span class="stat-label">Paid</span><span class="stat-val color-blue" id="det-paid">₱0.00</span></div>
+                    <div class="card p-0 overflow-hidden">
+                        <div class="wizard-progress">
+                            <div class="progress-step active" id="indicator-step-1">1. Customer</div>
+                            <div class="progress-step" id="indicator-step-2">2. Order</div>
+                            <div class="progress-step" id="indicator-step-3">3. Milestone</div>
+                            <div class="progress-step" id="indicator-step-4">4. Penalty</div>
+                            <div class="progress-step" id="indicator-step-5">5. Review</div>
+                        </div>
+
+                        <div class="p-20">
+                            <form id="create-project-form" onsubmit="event.preventDefault();">
+                                <!-- Steps strictly mirror original HTML structure to guarantee JS compatibility -->
+                                <div class="wizard-step active" id="wizard-step-1">
+                                    <h3 class="step-title">Customer Details</h3>
+                                    <div class="form-group"><label>Customer Name *</label><input type="text" id="custName" class="form-control" required></div>
+                                    <div class="form-group"><label>Mobile Number *</label><input type="tel" id="custMobile" class="form-control" required></div>
+                                    <div class="form-group"><label>Email Address</label><input type="email" id="custEmail" class="form-control"></div>
+                                    <button type="button" class="btn-primary full-width mt-24" onclick="app.nextWizardStep(1)">Next Step</button>
+                                </div>
+
+                                <div class="wizard-step" id="wizard-step-2">
+                                    <h3 class="step-title">Order Details</h3>
+                                    <div class="form-group"><label>Project Name *</label><input type="text" id="projName" class="form-control" required></div>
+                                    <div class="form-group"><label>Total Amount (₱) *</label><input type="number" id="projTotal" class="form-control" min="1" step="0.01" required onchange="app.generateMilestones()"></div>
+                                    <div class="form-group"><label>Expected Completion *</label><input type="date" id="projDate" class="form-control" required onchange="app.generateMilestones()"></div>
+                                    <div class="flex-row gap-12 mt-24">
+                                        <button type="button" class="btn-secondary flex-1" onclick="app.prevWizardStep(2)">Back</button>
+                                        <button type="button" class="btn-primary flex-1" onclick="app.nextWizardStep(2)">Next Step</button>
+                                    </div>
+                                </div>
+
+                                <div class="wizard-step" id="wizard-step-3">
+                                    <h3 class="step-title">Payment Milestones</h3>
+                                    <div class="form-group mb-16">
+                                        <label>Distribution Type</label>
+                                        <select id="projMilestoneType" class="form-control" onchange="app.generateMilestones()">
+                                            <option value="equal">Equally Divided</option>
+                                            <option value="custom">Custom Amounts</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group mb-16">
+                                        <label>Number of Milestones *</label>
+                                        <input type="number" id="projMilestoneCount" class="form-control" min="1" max="12" value="2" required onchange="app.generateMilestones()">
+                                    </div>
+                                    
+                                    <div id="milestones-container" class="milestones-editor"></div>
+                                    
+                                    <div class="milestone-summary mt-16 text-right text-sm">
+                                        Allocated: <strong id="milestone-allocated">₱0.00</strong> / <span id="milestone-total-target">₱0.00</span>
+                                        <div id="milestone-warning" class="color-orange text-xs mt-4" style="display:none;">Allocated amounts must strictly equal Total.</div>
+                                    </div>
+
+                                    <div class="flex-row gap-12 mt-24">
+                                        <button type="button" class="btn-secondary flex-1" onclick="app.prevWizardStep(3)">Back</button>
+                                        <button type="button" class="btn-primary flex-1" id="btn-next-step-3" onclick="app.nextWizardStep(3)">Next Step</button>
+                                    </div>
+                                </div>
+
+                                <div class="wizard-step" id="wizard-step-4">
+                                    <h3 class="step-title">Penalty Fee (Optional)</h3>
+                                    <div class="form-group"><label>Penalty Type</label><select id="projPenaltyType" class="form-control"><option value="fixed">Fixed Amount (₱)</option><option value="percent">Percentage (%)</option></select></div>
+                                    <div class="form-group"><label>Penalty Value</label><input type="number" id="projPenaltyValue" class="form-control" min="0" step="0.01"></div>
+                                    <div class="form-group"><label>When to Charge</label><select id="projPenaltyWhen" class="form-control"><option value="">Select timing...</option><option value="1 day after due date">1 day after due date</option><option value="1 week after due date">1 week after due date</option></select></div>
+                                    <div class="flex-row gap-12 mt-24">
+                                        <button type="button" class="btn-secondary flex-1" onclick="app.prevWizardStep(4)">Back</button>
+                                        <button type="button" class="btn-primary flex-1" onclick="app.nextWizardStep(4)">Review</button>
+                                    </div>
+                                </div>
+
+                                <div class="wizard-step" id="wizard-step-5">
+                                    <h3 class="step-title">Review & Create</h3>
+                                    <div class="review-block card bg-slate-50 p-12 mb-12"><p id="rev-cust" class="text-sm m-0"></p></div>
+                                    <div class="review-block card bg-slate-50 p-12 mb-12"><p id="rev-order" class="text-sm m-0"></p></div>
+                                    <div class="review-block card bg-slate-50 p-12 mb-12"><p id="rev-milestones" class="text-sm m-0"></p></div>
+                                    <div class="review-block card bg-slate-50 p-12 mb-16"><p id="rev-penalty" class="text-sm m-0"></p></div>
+                                    
+                                    <div class="flex-row gap-12 mt-24">
+                                        <button type="button" class="btn-secondary flex-1" onclick="app.prevWizardStep(5)">Back</button>
+                                        <button type="button" class="btn-primary flex-1 bg-success" id="btn-save-project" onclick="app.handleCreateProject(event)">Create</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div class="progress-bar-container mt-12"><div class="progress-bar-fill" id="det-progress-fill"></div></div>
                 </div>
 
-                <div class="card" id="ready-action-card" style="display:none; margin-bottom:16px;">
-                    <button class="btn-primary full-width bg-success rounded-pill" onclick="app.markOrderReady()">Mark Order Ready</button>
+                <!-- VIEW 4: PROJECT DETAIL -->
+                <div id="view-project-detail" class="app-view hidden content-padding mt-24">
+                    <div class="flex-row align-center mb-16 gap-12">
+                        <button class="btn-icon" onclick="app.navigateBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+                        <h1 class="page-title text-truncate m-0 flex-1" id="det-name">Project Details</h1>
+                    </div>
+
+                    <div class="card p-16 mb-16">
+                        <div class="flex-row justify-between align-center border-bottom pb-12 mb-12">
+                            <div>
+                                <div class="text-sm font-600 color-main" id="det-customer">Customer Name</div>
+                                <div class="text-xs text-muted" id="det-mobile">Mobile</div>
+                            </div>
+                            <div id="det-status-badge" class="badge">STATUS</div>
+                        </div>
+                        <div class="progress-stats flex-row justify-between mt-12">
+                            <div class="stat-col"><span class="text-xs text-muted">Total</span><span class="font-600" id="det-total">₱0.00</span></div>
+                            <div class="stat-col text-right"><span class="text-xs text-muted">Paid</span><span class="font-600 color-blue" id="det-paid">₱0.00</span></div>
+                        </div>
+                        <div class="progress-bar-container mt-12"><div class="progress-bar-fill" id="det-progress-fill"></div></div>
+                    </div>
+
+                    <div class="card p-16 mb-16 bg-success-light border-success" id="ready-action-card" style="display:none;">
+                        <p class="text-sm mb-12 font-500">Order preparation complete?</p>
+                        <button class="btn-primary full-width bg-success" onclick="app.markOrderReady()">Mark Order Ready</button>
+                    </div>
+
+                    <h3 class="section-title text-sm font-600 text-muted mb-12 uppercase">Payment Schedule</h3>
+                    <div class="card p-16">
+                        <div class="timeline" id="det-milestones"></div>
+                    </div>
                 </div>
 
-                <h3 class="section-title">Schedule</h3>
-                <div class="card p-0"><div class="timeline" id="det-milestones"></div></div>
-            </div>
-
-            <!-- VIEW 5: CHECKOUT -->
-            <div id="view-checkout" class="app-view hidden content-padding mt-16 sub-view">
-                <div class="card text-center mb-16">
-                    <img src="assets/QR.jpg" alt="QR Code" onerror="this.style.display='none'" class="qr-img mx-auto mb-16">
-                    <h3 class="section-title">GCash Payment</h3>
-                    <div id="checkout-breakdown" class="text-sm text-muted mb-16 text-left"></div>
-                    <input type="number" id="checkout-amount-input" class="form-control text-center text-lg mb-16" step="0.01" min="1">
-                    <button class="btn-primary full-width rounded-pill" id="btn-authorize-pay" onclick="app.processPayment()">Pay Now</button>
+                <!-- VIEW 5: CUSTOMER CHECKOUT -->
+                <div id="view-checkout" class="app-view hidden content-padding mt-24">
+                    <div class="flex-row align-center mb-16 gap-12">
+                        <button class="btn-icon" onclick="app.navigateBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+                        <h1 class="page-title m-0">Payment</h1>
+                    </div>
+                    
+                    <div class="card p-20 text-center">
+                        <div class="qr-placeholder mb-20 bg-slate-50 p-24 radius-8 border-dashed">
+                            <img src="assets/QR.jpg" alt="GCash QR" style="max-width: 150px; margin: 0 auto;" onerror="this.style.display='none'">
+                            <p class="text-sm font-500 mt-12 color-blue">Scan via GCash</p>
+                        </div>
+                        
+                        <div id="checkout-breakdown" class="text-sm text-left mb-16 border-bottom pb-16"></div>
+                        
+                        <div class="form-group text-left">
+                            <label>Amount to Pay (₱)</label>
+                            <input type="number" id="checkout-amount-input" class="form-control text-lg font-600 text-center" step="0.01">
+                        </div>
+                        <button class="btn-primary full-width mt-16" id="btn-authorize-pay" onclick="app.processPayment()">Authorize & Pay</button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- VIEW 6: TRANSACTIONS -->
-            <div id="view-transactions" class="app-view hidden content-padding mt-16">
-                <h2 class="section-title">Payment History</h2>
-                <div class="card p-0">
-                    <div id="ledger-list" class="ledger-list"></div>
+                <!-- VIEW 6: TRANSACTIONS -->
+                <div id="view-transactions" class="app-view hidden content-padding mt-24">
+                    <div class="flex-row align-center mb-16 gap-12">
+                        <button class="btn-icon mobile-only" onclick="app.navigateBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+                        <h1 class="page-title m-0">Payment History</h1>
+                    </div>
+                    <div class="card p-0">
+                        <div id="ledger-list" class="ledger-list"></div>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- Bottom Spacer for Nav -->
-            <div class="bottom-nav-spacer"></div>
-        </main>
+            </main>
 
-        <!-- Navigation System (Bottom Mobile / Side Desktop) -->
-        <nav class="app-nav" id="appNav">
-            <a href="#" class="nav-item active" data-target="view-wallet">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M21 12H17"/><path d="M17 12a2 2 0 0 1-2-2 2 2 0 0 1 2-2"/></svg>
-                <span>Home</span>
-            </a>
-            <a href="#" class="nav-item" data-target="view-projects-list">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                <span>Projects</span>
-            </a>
-            <a href="#" class="nav-item" data-target="view-transactions">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-                <span>History</span>
-            </a>
-        </nav>
+            <!-- Mobile Bottom Navigation (Hidden on Desktop) -->
+            <nav class="mobile-bottom-nav">
+                <a href="#" class="nav-item active" data-target="view-wallet">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M21 12H17"/><path d="M17 12a2 2 0 0 1-2-2 2 2 0 0 1 2-2"/></svg>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="nav-item" data-target="view-projects-list">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    <span>Projects</span>
+                </a>
+                <a href="#" class="nav-item" data-target="view-transactions">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                    <span>History</span>
+                </a>
+            </nav>
+        </div>
     </div>
 
-    <!-- Modals (Structure retained, classes updated to mobile-first CSS) -->
-    <!-- ... Remaining modal code stays intact as referenced in original ... -->
+    <!-- Modals (Preserved structural IDs for JS hooks) -->
+    <div id="invoiceModal" class="modal-overlay hidden" onclick="if(event.target === this) app.closeInvoiceModal()">
+        <div class="modal-surface bottom-sheet">
+            <div class="modal-header border-bottom p-16 flex-row justify-between align-center">
+                <h3 class="font-600 m-0">E-Receipt</h3>
+                <button class="btn-icon" onclick="app.closeInvoiceModal()">&times;</button>
+            </div>
+            <div class="modal-body p-16" id="invoiceBody"></div>
+            <div class="modal-footer p-16 bg-slate-50">
+                <button class="btn-primary full-width" onclick="window.print()">Download PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="creationFeedbackModal" class="modal-overlay hidden">
+        <div class="modal-surface p-24 text-center">
+            <div id="createStateLoading" class="state-container">
+                <div class="spinner mx-auto mb-16"></div>
+                <h3 class="font-600">Creating Project...</h3>
+            </div>
+            <div id="createStateSuccess" class="state-container hidden">
+                <div class="icon-circle bg-success mx-auto mb-16"><svg width="24" height="24" stroke="white" stroke-width="3" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+                <h3 class="font-600">Success!</h3>
+            </div>
+            <div id="createStateError" class="state-container hidden">
+                <h3 class="font-600 color-orange mb-16">Failed to Create</h3>
+                <button class="btn-secondary full-width" onclick="app.closeCreationModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="paymentFeedbackModal" class="modal-overlay hidden">
+        <div class="modal-surface p-24 text-center">
+            <div id="paymentStateLoading" class="state-container">
+                <div class="spinner mx-auto mb-16"></div>
+                <h3 class="font-600">Processing...</h3>
+            </div>
+            <div id="paymentStateSuccess" class="state-container hidden">
+                <div class="icon-circle bg-success mx-auto mb-16"><svg width="24" height="24" stroke="white" stroke-width="3" fill="none" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+                <h3 class="font-600 mb-8">Payment Successful</h3>
+                <div class="text-2xl font-700 color-blue mb-20" id="successModalAmount">₱0.00</div>
+                <button class="btn-primary full-width" onclick="app.closePaymentSuccessModal()">Done</button>
+            </div>
+            <div id="paymentStateError" class="state-container hidden">
+                <h3 class="font-600 color-orange mb-16">Payment Failed</h3>
+                <button class="btn-secondary full-width" onclick="app.closePaymentModalError()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/script.js"></script>
 </body>
 </html>
