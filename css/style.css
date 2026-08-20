@@ -11,6 +11,11 @@
     --clr-success-light: #ecfdf5;
     --clr-warning: #f59e0b;
     --clr-ready: #8b5cf6;
+
+    /* Danger Palette for Overdue Section */
+    --clr-danger: #ef4444;
+    --clr-danger-light: #fef2f2;
+    --clr-danger-border: #fca5a5;
     
     --radius-card: 12px;
     --radius-btn: 8px;
@@ -32,31 +37,39 @@ body { font-family: var(--font-family); background-color: var(--clr-bg-app); col
 .flex-shrink-0 { flex-shrink: 0; }
 .justify-between { justify-content: space-between; }
 .align-center { align-items: center; }
+.align-start { align-items: flex-start; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 .block { display: block; }
-.m-0 { margin: 0; }
-.mb-4 { margin-bottom: 4px; }
-.mb-8 { margin-bottom: 8px; }
-.mb-12 { margin-bottom: 12px; }
-.mb-16 { margin-bottom: 16px; }
-.mb-20 { margin-bottom: 20px; }
+
+/* Margins with !important protection */
+.m-0 { margin: 0 !important; }
+.mb-4 { margin-bottom: 4px !important; }
+.mb-8 { margin-bottom: 8px !important; }
+.mb-12 { margin-bottom: 12px !important; }
+.mb-16 { margin-bottom: 16px !important; }
+.mb-20 { margin-bottom: 20px !important; }
 .mb-24 { margin-bottom: 24px !important; }
-.mt-4 { margin-top: 4px; }
-.mt-12 { margin-top: 12px; }
-.mt-16 { margin-top: 16px; }
-.mt-24 { margin-top: 24px; }
+.mt-4 { margin-top: 4px !important; }
+.mt-8 { margin-top: 8px !important; }
+.mt-12 { margin-top: 12px !important; }
+.mt-16 { margin-top: 16px !important; }
+.mt-24 { margin-top: 24px !important; }
+
+/* Padding & Gaps */
 .p-0 { padding: 0; }
 .p-12 { padding: 12px; }
 .p-16 { padding: 16px; }
 .p-20 { padding: 20px; }
 .p-24 { padding: 24px; }
+.pb-8 { padding-bottom: 8px; }
 .pb-12 { padding-bottom: 12px; }
 .pb-16 { padding-bottom: 16px; }
 .pt-12 { padding-top: 12px; }
 .pr-12 { padding-right: 12px; }
 .gap-8 { gap: 8px; }
 .gap-12 { gap: 12px; }
+.gap-24 { gap: 24px; }
 .full-width { width: 100%; }
 .min-w-0 { min-width: 0; }
 
@@ -73,9 +86,16 @@ body { font-family: var(--font-family); background-color: var(--clr-bg-app); col
 .uppercase { text-transform: uppercase; letter-spacing: 0.5px; }
 .line-height-15 { line-height: 1.5; }
 
+/* Text & Border Colors */
 .color-main { color: var(--clr-text-main); }
 .color-blue { color: var(--clr-primary); }
 .color-orange { color: var(--clr-warning); }
+.color-danger { color: var(--clr-danger) !important; }
+.bg-danger { background-color: var(--clr-danger) !important; color: white; border-color: var(--clr-danger); }
+.bg-danger-light { background-color: var(--clr-danger-light); }
+.border-danger { border: 1px solid var(--clr-danger-border); }
+.border-danger-dim { border-bottom: 1px dashed var(--clr-danger-border); }
+
 .bg-success { background-color: var(--clr-success) !important; color: white; }
 .bg-success-light { background-color: var(--clr-success-light); }
 .bg-slate-50 { background-color: #f8fafc; }
@@ -115,7 +135,7 @@ body { font-family: var(--font-family); background-color: var(--clr-bg-app); col
 
 /* Dashboard UI */
 .fintech-header-bg { background: var(--clr-primary); padding: 24px 16px 64px; margin-top: -1px; }
-.page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.page-title { font-size: 20px; font-weight: 700; }
 .pull-up { margin-top: -40px; position: relative; z-index: 5; }
 .balance-label { display: block; font-size: 12px; opacity: 0.8; margin-bottom: 4px; }
 .balance-amount { font-size: 32px; font-weight: 700; }
@@ -140,7 +160,7 @@ body { font-family: var(--font-family); background-color: var(--clr-bg-app); col
 .btn-icon { background: none; border: none; color: inherit; display: flex; align-items: center; padding: 4px; margin-left: -4px; cursor: pointer; }
 
 /* Explicit overflow handling for forms and calendar inputs */
-.form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.form-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .form-group label { font-size: 12px; font-weight: 600; color: var(--clr-text-muted); }
 .form-control { padding: 12px; border: 1px solid var(--clr-border); border-radius: 8px; font-size: 14px; font-family: inherit; background: #fff; transition: border-color 0.2s; width: 100%; max-width: 100%; min-width: 0; }
 .form-control:focus { outline: none; border-color: var(--clr-primary); }
@@ -191,13 +211,13 @@ input[type="date"].form-control { display: block; box-sizing: border-box; }
 .milestone-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .milestone-field label { font-size: 11px; color: var(--clr-text-muted); font-weight: 600; }
 
-/* Dynamic Ledger (Updated Spacing) */
+/* Dynamic Ledger */
 .ledger-list { display: flex; flex-direction: column; }
 .ledger-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px; border-bottom: 1px solid var(--clr-border); gap: 16px; }
 .ledger-item:last-child { border-bottom: none; }
-.tx-items { font-size: 15px; font-weight: 700; display: block; margin-bottom: 6px; color: var(--clr-text-main); }
+.tx-items { font-size: 15px; font-weight: 700; display: block; color: var(--clr-text-main); }
 .tx-meta { font-size: 12px; color: var(--clr-text-muted); line-height: 1.5; display: block; }
-.tx-amount { font-size: 16px; font-weight: 700; color: var(--clr-success); text-align: right; margin-bottom: 12px; display: block; }
+.tx-amount { font-size: 16px; font-weight: 700; color: var(--clr-success); text-align: right; display: block; }
 .empty-state { padding: 32px; text-align: center; color: var(--clr-text-muted); font-size: 13px; }
 
 /* Wizard Display */
@@ -221,7 +241,7 @@ input[type="date"].form-control { display: block; box-sizing: border-box; }
 /* Invoice Details */
 .invoice-brand { text-align: center; margin-bottom: 24px; }
 .invoice-brand-name { font-weight: 700; font-size: 18px; color: var(--clr-text-main); }
-.invoice-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; gap: 16px; }
+.invoice-row { display: flex; justify-content: space-between; font-size: 13px; gap: 16px; }
 .invoice-row span { color: var(--clr-text-muted); flex-shrink: 0; }
 .invoice-row strong { text-align: right; color: var(--clr-text-main); word-break: break-word; }
 .invoice-divider { height: 1px; border-top: 1px dashed var(--clr-border); margin: 16px 0; }

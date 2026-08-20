@@ -76,63 +76,104 @@ const app = {
     },
 
     switchView(viewId) {
-            // Hide all views
-            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
-            const target = document.getElementById(viewId);
-            if (target) target.classList.remove('hidden');
+        // Hide all views
+        document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden'));
+        const target = document.getElementById(viewId);
+        if (target) target.classList.remove('hidden');
 
-            // Manage UI headers/footers based on the view
-            const isSubView = target && target.classList.contains('sub-view');
-            const header = document.getElementById('appHeader');
-            const backBtn = document.getElementById('globalBackBtn');
-            const mobileNav = document.getElementById('mobileNav');
-            const title = document.getElementById('headerTitle');
+        // Manage UI headers/footers based on the view
+        const isSubView = target && target.classList.contains('sub-view');
+        const header = document.getElementById('appHeader');
+        const backBtn = document.getElementById('globalBackBtn');
+        const mobileNav = document.getElementById('mobileNav');
+        const title = document.getElementById('headerTitle');
 
-            if (viewId === 'view-wallet') {
-                // Hide the entire top header exclusively on the Dashboard
-                if (header) header.style.display = 'none'; 
-                if (mobileNav) mobileNav.style.display = 'flex';
-            } else {
-                // Restore and configure the top header for all other pages
-                if (header) {
-                    header.style.display = 'flex';
-                    header.classList.add('sub-header');
-                }
-                if (title) title.style.display = 'flex'; 
-                if (mobileNav) mobileNav.style.display = isSubView ? 'none' : 'flex';
-                
-                if (this.history.length > 0) {
-                    backBtn.classList.remove('hidden');
-                } else {
-                    backBtn.classList.add('hidden');
-                }
-                
-                // Set contextual header titles
-                if(viewId === 'view-projects-list') title.innerText = 'Projects';
-                if(viewId === 'view-transactions') title.innerText = 'Payment History';
-                if(viewId === 'view-project-create') title.innerText = 'New Project';
-                if(viewId === 'view-project-detail') title.innerText = 'Project Details';
-                if(viewId === 'view-checkout') title.innerText = 'Payment';
+        if (viewId === 'view-wallet') {
+            if (header) header.style.display = 'none'; 
+            if (mobileNav) mobileNav.style.display = 'flex';
+        } else {
+            if (header) {
+                header.style.display = 'flex';
+                header.classList.add('sub-header');
             }
+            if (title) title.style.display = 'flex'; 
+            if (mobileNav) mobileNav.style.display = isSubView ? 'none' : 'flex';
+            
+            if (this.history.length > 0) {
+                backBtn.classList.remove('hidden');
+            } else {
+                backBtn.classList.add('hidden');
+            }
+            
+            // Set contextual header titles
+            if(viewId === 'view-projects-list') title.innerText = 'Projects';
+            if(viewId === 'view-transactions') title.innerText = 'Payment History';
+            if(viewId === 'view-project-create') title.innerText = 'New Project';
+            if(viewId === 'view-project-detail') title.innerText = 'Project Details';
+            if(viewId === 'view-checkout') title.innerText = 'Payment';
+        }
 
-            // Fire rendering logic
-            if(viewId === 'view-wallet') this.updateDashboard();
-            if(viewId === 'view-projects-list') this.renderProjectsList();
-            if(viewId === 'view-transactions') this.renderTransactions();
-        },
+        // Fire rendering logic
+        if(viewId === 'view-wallet') this.updateDashboard();
+        if(viewId === 'view-projects-list') this.renderProjectsList();
+        if(viewId === 'view-transactions') this.renderTransactions();
+    },
 
     formatMoney(amount) {
         return parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+
+    // --- Core Logic: Centralized Penalty Calculation ---
+    getMilestoneFinancials(projId, milestoneIdx) {
+        const p = this.projects.find(x => x.id === projId);
+        const m = p.milestones[milestoneIdx];
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        let isOverdue = false;
+        let penaltyAmount = 0;
+        const originalAmount = m.amount;
+
+        if (!m.paid && m.date && m.date < todayStr) {
+            isOverdue = true;
+            if (p.penalty && p.penalty.amount > 0) {
+                if (p.penalty.type === 'percent') {
+                    // Penalty percentage based on the remaining base balance
+                    let remainingBase = p.total - p.milestones.filter(x => x.paid).reduce((sum, x) => sum + x.amount, 0);
+                    penaltyAmount = remainingBase * (p.penalty.amount / 100);
+                } else {
+                    penaltyAmount = parseFloat(p.penalty.amount);
+                }
+            }
+        }
+        
+        return {
+            originalAmount,
+            penaltyAmount,
+            totalDue: originalAmount + penaltyAmount,
+            isOverdue
+        };
     },
 
     // --- Core Logic: Dashboard ---
     updateDashboard() {
         let totalValue = 0, collected = 0, activeCount = 0;
 
-        this.projects.forEach(p => {
-            totalValue += p.total;
-            let pPaid = p.milestones.filter(m => m.paid).reduce((sum, m) => sum + m.amount, 0);
-            collected += pPaid;
+        this.projects.forEach((p, pIdx) => {
+            let pTotal = p.total;
+            let pCollected = 0;
+
+            p.milestones.forEach((m, mIdx) => {
+                if (m.paid) {
+                    pCollected += (m.amountPaid || m.amount);
+                    pTotal += (m.penaltyPaid || 0); // Include paid penalties in the project's total realized value
+                } else {
+                    const fin = this.getMilestoneFinancials(p.id, mIdx);
+                    pTotal += fin.penaltyAmount; // Include active penalties in the project's overall value
+                }
+            });
+
+            totalValue += pTotal;
+            collected += pCollected;
             
             if (p.status !== 'COMPLETED' && p.status !== 'DRAFT') {
                 activeCount++;
@@ -143,6 +184,141 @@ const app = {
         document.getElementById('dash-total-value').innerText = this.formatMoney(totalValue);
         document.getElementById('dash-outstanding').innerText = this.formatMoney(totalValue - collected);
         document.getElementById('dash-active-count').innerText = activeCount;
+
+        // Render the dynamic dashboard sections
+        this.renderDashboardSections();
+    },
+
+    renderDashboardSections() {
+        // 1. Overdue Payments
+        const overdueContainer = document.getElementById('dash-overdue-container');
+        let overdueHtml = '';
+        
+        const overdueProjects = this.projects.filter(p => {
+            if (p.status === 'COMPLETED' || p.status === 'DRAFT') return false;
+            return p.milestones.some((m, idx) => {
+                if (m.paid) return false;
+                const fin = this.getMilestoneFinancials(p.id, idx);
+                return fin.isOverdue && fin.penaltyAmount > 0;
+            });
+        });
+
+        if (overdueProjects.length > 0) {
+            overdueHtml += `<h3 class="text-sm font-700 text-muted mb-12 uppercase">Action Required</h3><div class="flex-column gap-12">`;
+            overdueProjects.forEach(p => {
+                let totalOriginal = 0;
+                let totalPenalty = 0;
+                let totalDue = 0;
+
+                p.milestones.forEach((m, idx) => {
+                    if (!m.paid) {
+                        const fin = this.getMilestoneFinancials(p.id, idx);
+                        if (fin.isOverdue) {
+                            totalOriginal += fin.originalAmount;
+                            totalPenalty += fin.penaltyAmount;
+                            totalDue += fin.totalDue;
+                        }
+                    }
+                });
+
+                overdueHtml += `
+                    <div class="card p-16 border-danger bg-danger-light interactive" onclick="app.openProjectDetail('${p.id}')">
+                        <div class="flex-row justify-between align-center mb-12">
+                            <span class="font-700 color-danger text-truncate pr-12">${p.name}</span>
+                            <span class="badge bg-danger">OVERDUE</span>
+                        </div>
+                        <div class="flex-row justify-between text-sm mb-4">
+                            <span class="text-muted">Original Amount:</span>
+                            <span class="font-600">₱${this.formatMoney(totalOriginal)}</span>
+                        </div>
+                        <div class="flex-row justify-between text-sm mb-8 border-bottom pb-8 border-danger-dim">
+                            <span class="text-muted">Penalty Fee:</span>
+                            <span class="font-600 color-danger">+ ₱${this.formatMoney(totalPenalty)}</span>
+                        </div>
+                        <div class="flex-row justify-between">
+                            <span class="font-600">Total Due:</span>
+                            <span class="font-700 color-danger text-lg">₱${this.formatMoney(totalDue)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            overdueHtml += `</div>`;
+        }
+        overdueContainer.innerHTML = overdueHtml;
+
+        // 2. Almost Completed Projects
+        const almostContainer = document.getElementById('dash-almost-completed-container');
+        let almostHtml = '';
+        const almostProjects = this.projects.filter(p => {
+            if (p.status === 'COMPLETED' || p.status === 'DRAFT') return false;
+            let pPaid = p.milestones.filter(m => m.paid).reduce((sum, m) => sum + (m.amountPaid || m.amount), 0);
+            
+            let pTotal = p.total;
+            p.milestones.forEach((m, idx) => {
+                if (m.paid) pTotal += (m.penaltyPaid || 0);
+                else pTotal += this.getMilestoneFinancials(p.id, idx).penaltyAmount;
+            });
+            
+            let pct = pTotal > 0 ? (pPaid / pTotal) : 0;
+            return pct >= 0.5; // Over 50% paid
+        }).sort((a, b) => {
+            let pctA = a.milestones.filter(m => m.paid).reduce((s, m) => s + m.amount, 0) / a.total;
+            let pctB = b.milestones.filter(m => m.paid).reduce((s, m) => s + m.amount, 0) / b.total;
+            return pctB - pctA; 
+        }).slice(0, 3); 
+
+        if (almostProjects.length > 0) {
+            almostHtml += `<h3 class="text-sm font-700 text-muted mb-12 uppercase mt-24">Almost Completed</h3><div class="flex-column gap-12">`;
+            almostProjects.forEach(p => {
+                let pPaid = p.milestones.filter(m => m.paid).reduce((sum, m) => sum + (m.amountPaid || m.amount), 0);
+                let pTotal = p.total;
+                p.milestones.forEach((m, idx) => {
+                    if (m.paid) pTotal += (m.penaltyPaid || 0);
+                    else pTotal += this.getMilestoneFinancials(p.id, idx).penaltyAmount;
+                });
+                const pct = pTotal > 0 ? Math.round((pPaid / pTotal) * 100) : 0;
+                
+                almostHtml += `
+                    <div class="card p-16 interactive" onclick="app.openProjectDetail('${p.id}')">
+                        <div class="flex-row justify-between align-center mb-8">
+                            <span class="font-600 text-truncate pr-12">${p.name}</span>
+                            <span class="text-xs font-700 color-blue">${pct}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            almostHtml += `</div>`;
+        }
+        almostContainer.innerHTML = almostHtml;
+
+        // 3. Newly Created Projects
+        const newContainer = document.getElementById('dash-new-projects-container');
+        let newHtml = '';
+        const newProjects = [...this.projects].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
+
+        if (newProjects.length > 0) {
+            newHtml += `<h3 class="text-sm font-700 text-muted mb-12 uppercase mt-24">Newly Created Projects</h3><div class="flex-column gap-12">`;
+            newProjects.forEach(p => {
+                const statusObj = this.STATUS[p.status];
+                newHtml += `
+                    <div class="card p-16 interactive" onclick="app.openProjectDetail('${p.id}')">
+                        <div class="flex-row justify-between align-start mb-4 gap-12">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-600 text-truncate">${p.name}</div>
+                                <div class="text-xs text-muted text-truncate mt-4">${p.customer.name}</div>
+                            </div>
+                            <span class="badge ${statusObj.class} flex-shrink-0">${statusObj.text}</span>
+                        </div>
+                        <div class="text-xs text-muted mt-8 border-top pt-8">Created: ${new Date(p.createdAt).toLocaleDateString()}</div>
+                    </div>
+                `;
+            });
+            newHtml += `</div>`;
+        }
+        newContainer.innerHTML = newHtml;
     },
 
     // --- Core Logic: Wizard Flow & Create Project ---
@@ -435,8 +611,19 @@ const app = {
         const completed = this.projects.filter(p => p.status === 'COMPLETED');
 
         const renderCard = (p) => {
-            const paidAmt = p.milestones.filter(m => m.paid).reduce((s, m) => s + m.amount, 0);
-            const pct = p.total > 0 ? Math.round((paidAmt / p.total) * 100) : 0;
+            let pPaid = 0;
+            let pTotal = p.total;
+            
+            p.milestones.forEach((m, idx) => {
+                if (m.paid) {
+                    pPaid += (m.amountPaid || m.amount);
+                    pTotal += (m.penaltyPaid || 0);
+                } else {
+                    pTotal += this.getMilestoneFinancials(p.id, idx).penaltyAmount;
+                }
+            });
+            
+            const pct = pTotal > 0 ? Math.round((pPaid / pTotal) * 100) : 0;
             const statusObj = this.STATUS[p.status];
 
             return `
@@ -450,8 +637,8 @@ const app = {
                     </div>
                     <div>
                         <div class="flex-row justify-between text-xs mb-8 font-600 color-main">
-                            <span>₱${this.formatMoney(paidAmt)} Paid</span>
-                            <span>₱${this.formatMoney(p.total)}</span>
+                            <span>₱${this.formatMoney(pPaid)} Paid</span>
+                            <span>₱${this.formatMoney(pTotal)}</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill" style="width: ${pct}%"></div>
@@ -496,12 +683,24 @@ const app = {
         document.getElementById('det-date').innerText = p.expectedDate ? new Date(p.expectedDate).toLocaleDateString() : 'N/A';
         document.getElementById('det-status-text').innerText = statusObj.text;
 
-        const paidAmt = p.milestones.filter(m => m.paid).reduce((s, m) => s + m.amount, 0);
-        const remAmt = p.total - paidAmt;
-        const pct = p.total > 0 ? Math.round((paidAmt / p.total) * 100) : 0;
+        let pTotal = p.total;
+        let pPaid = 0;
+        
+        // Dynamically calculate the active totals including dynamic penalties
+        p.milestones.forEach((m, idx) => {
+            if (m.paid) {
+                pPaid += (m.amountPaid || m.amount);
+                pTotal += (m.penaltyPaid || 0);
+            } else {
+                pTotal += this.getMilestoneFinancials(id, idx).penaltyAmount;
+            }
+        });
 
-        document.getElementById('det-total').innerText = `₱${this.formatMoney(p.total)}`;
-        document.getElementById('det-paid').innerText = `₱${this.formatMoney(paidAmt)}`;
+        const remAmt = pTotal - pPaid;
+        const pct = pTotal > 0 ? Math.round((pPaid / pTotal) * 100) : 0;
+
+        document.getElementById('det-total').innerText = `₱${this.formatMoney(pTotal)}`;
+        document.getElementById('det-paid').innerText = `₱${this.formatMoney(pPaid)}`;
         document.getElementById('det-remaining').innerText = `₱${this.formatMoney(remAmt)}`;
         document.getElementById('det-progress-fill').style.width = `${pct}%`;
         document.getElementById('det-progress-text').innerText = `${pct}% PAID`;
@@ -513,16 +712,32 @@ const app = {
             let stateClass = '';
             let metaText = m.date ? new Date(m.date).toLocaleDateString() : 'TBD';
             let actionsHtml = '';
+            let amountDisplay = '';
 
             if (m.paid) {
                 stateClass = 'paid';
                 metaText += ` • Paid on ${new Date(m.paidDate).toLocaleDateString()}`;
-            } else if (m.requested) {
-                stateClass = 'active';
-                metaText += ' • Payment Requested';
-                actionsHtml = `<button class="btn-primary btn-sm" onclick="app.openCheckout('${p.id}', ${idx})">Simulate GCash Pay</button>`;
+                
+                if (m.penaltyPaid > 0) {
+                    metaText += ` • <span class="color-danger font-600">Included ₱${this.formatMoney(m.penaltyPaid)} Penalty</span>`;
+                }
+                amountDisplay = `₱${this.formatMoney(m.amountPaid || m.amount)}`;
+                
             } else {
-                actionsHtml = `<button class="btn-outline btn-sm" onclick="app.sendPaymentRequest('${p.id}', ${idx})">Request</button>`;
+                const fin = this.getMilestoneFinancials(id, idx);
+                amountDisplay = `₱${this.formatMoney(fin.totalDue)}`;
+                
+                if (fin.isOverdue && fin.penaltyAmount > 0) {
+                    metaText += ` • <span class="color-danger font-600">Overdue (₱${this.formatMoney(fin.penaltyAmount)} Penalty)</span>`;
+                }
+                
+                if (m.requested) {
+                    stateClass = 'active';
+                    if (!fin.isOverdue) metaText += ' • Payment Requested';
+                    actionsHtml = `<button class="btn-primary btn-sm" onclick="app.openCheckout('${p.id}', ${idx})">Pay Now</button>`;
+                } else {
+                    actionsHtml = `<button class="btn-outline btn-sm" onclick="app.sendPaymentRequest('${p.id}', ${idx})">Request</button>`;
+                }
             }
 
             tl.innerHTML += `
@@ -533,7 +748,7 @@ const app = {
                             <div class="tl-meta">${metaText}</div>
                         </div>
                         <div class="tl-action-group">
-                            <div class="tl-amount">₱${this.formatMoney(m.amount)}</div>
+                            <div class="tl-amount">${amountDisplay}</div>
                             <div class="tl-actions">${actionsHtml}</div>
                         </div>
                     </div>
@@ -558,15 +773,35 @@ const app = {
         
         const p = this.projects.find(x => x.id === projId);
         const m = p.milestones[milestoneIdx];
+        const fin = this.getMilestoneFinancials(projId, milestoneIdx);
         
         const breakdown = document.getElementById('checkout-breakdown');
-        breakdown.innerHTML = `
-            <div class="flex-row justify-between mb-8"><span class="text-muted">Project:</span> <strong>${p.name}</strong></div>
-            <div class="flex-row justify-between mb-8"><span class="text-muted">Customer:</span> <strong>${p.customer.name}</strong></div>
-            <div class="flex-row justify-between"><span class="text-muted">Milestone:</span> <strong>${m.name}</strong></div>
+        let breakdownHtml = `
+            <div class="flex-row justify-between mb-8"><span class="text-muted">Project:</span> <strong class="text-right">${p.name}</strong></div>
+            <div class="flex-row justify-between mb-8"><span class="text-muted">Customer:</span> <strong class="text-right">${p.customer.name}</strong></div>
+            <div class="flex-row justify-between"><span class="text-muted">Milestone:</span> <strong class="text-right">${m.name}</strong></div>
         `;
         
-        document.getElementById('checkout-amount-input').value = m.amount;
+        // Dynamically insert overdue penalty calculations
+        if (fin.isOverdue && fin.penaltyAmount > 0) {
+            breakdownHtml += `
+                <div class="border-top mt-12 pt-12 mb-12"></div>
+                <div class="flex-row justify-between mb-8"><span class="text-muted">Original Amount:</span> <strong>₱${this.formatMoney(fin.originalAmount)}</strong></div>
+                <div class="flex-row justify-between mb-8"><span class="color-danger">Overdue Penalty:</span> <strong class="color-danger">+ ₱${this.formatMoney(fin.penaltyAmount)}</strong></div>
+                <div class="flex-row justify-between"><span class="font-600">Total Due:</span> <strong class="font-600">₱${this.formatMoney(fin.totalDue)}</strong></div>
+            `;
+        } else {
+             breakdownHtml += `
+                <div class="border-top mt-12 pt-12 mb-12"></div>
+                <div class="flex-row justify-between"><span class="font-600">Total Due:</span> <strong class="font-600">₱${this.formatMoney(fin.totalDue)}</strong></div>
+            `;
+        }
+        
+        breakdown.innerHTML = breakdownHtml;
+        
+        // Automatically default to the total due, including penalties
+        document.getElementById('checkout-amount-input').value = fin.totalDue;
+        
         this.navigateTo('view-checkout');
     },
 
@@ -608,7 +843,7 @@ const app = {
         p.milestones[milestoneIdx].requested = true;
         if(p.status === 'DRAFT') p.status = 'PAYMENT_REQUESTED';
 
-        alert(`Payment Request for ₱${this.formatMoney(p.milestones[milestoneIdx].amount)} successfully sent to ${p.customer.mobile}.`);
+        alert(`Payment Request sent successfully to ${p.customer.mobile}.`);
         this.openProjectDetail(projId);
     },
 
@@ -617,8 +852,15 @@ const app = {
         if(!p) return;
         
         const m = p.milestones[milestoneIdx];
+        const fin = this.getMilestoneFinancials(projId, milestoneIdx);
+        const paymentAmount = parseFloat(document.getElementById('checkout-amount-input').value);
+        
         m.paid = true;
         m.paidDate = new Date().toISOString();
+        
+        // Lock in the financials at the time of payment
+        m.amountPaid = paymentAmount;
+        m.penaltyPaid = fin.penaltyAmount;
 
         const newTxnId = 'TXN-' + Math.random().toString(36).substring(2, 9).toUpperCase();
         this.transactions.unshift({
@@ -626,7 +868,10 @@ const app = {
             projName: p.name,
             customerName: p.customer.name,
             milestoneName: m.name,
-            amount: m.amount,
+            amount: paymentAmount,
+            originalAmount: fin.originalAmount,
+            penaltyAmount: fin.penaltyAmount,
+            isOverdue: fin.isOverdue,
             date: m.paidDate
         });
 
@@ -638,7 +883,7 @@ const app = {
         else if (p.status === 'IN_PROGRESS' && anyPaid) p.status = 'PARTIALLY_PAID';
 
         this.pendingTxnId = newTxnId;
-        document.getElementById('successModalAmount').innerText = `₱${this.formatMoney(m.amount)}`;
+        document.getElementById('successModalAmount').innerText = `₱${this.formatMoney(paymentAmount)}`;
     },
 
     closePaymentSuccessModal() {
@@ -677,36 +922,47 @@ const app = {
 
     // --- Ledger / History ---
     renderTransactions() {
-            const listDiv = document.getElementById('ledger-list');
-            listDiv.innerHTML = '';
-            
-            if (this.transactions.length === 0) {
-                listDiv.innerHTML = '<p class="empty-state">No recorded payments yet.</p>';
-                return;
-            }
+        const listDiv = document.getElementById('ledger-list');
+        listDiv.innerHTML = '';
+        
+        if (this.transactions.length === 0) {
+            listDiv.innerHTML = '<p class="empty-state">No recorded payments yet.</p>';
+            return;
+        }
 
-            this.transactions.forEach(t => {
-                // Each transaction is now its own standalone card
-                listDiv.innerHTML += `
-                    <div class="card p-20 mb-16 flex-row justify-between align-center gap-12">
-                        <div class="flex-1 min-w-0 pr-12">
-                            <span class="font-600 color-main block mb-4 text-truncate text-lg">${t.projName}</span>
-                            <span class="text-xs text-muted block line-height-15">${t.milestoneName} • Ref: ${t.id}</span>
-                            <span class="text-xs text-muted block mt-8">${new Date(t.date).toLocaleString()}</span>
-                        </div>
-                        <div class="flex-column flex-shrink-0" style="align-items: flex-end; gap: 12px;">
-                            <span class="font-700 color-success text-lg">₱${this.formatMoney(t.amount)}</span>
-                            <button class="btn-outline btn-sm" onclick="app.openInvoiceModal('${t.id}')">Invoice</button>
-                        </div>
+        this.transactions.forEach(t => {
+            listDiv.innerHTML += `
+                <div class="card p-20 mb-16 flex-row justify-between align-start gap-12">
+                    <div class="flex-1 min-w-0 pr-12">
+                        <span class="font-600 color-main block mb-4 text-truncate text-lg">${t.projName}</span>
+                        <span class="text-xs text-muted block line-height-15">${t.milestoneName} • Ref: ${t.id}</span>
+                        <span class="text-xs text-muted block mt-8">${new Date(t.date).toLocaleString()}</span>
                     </div>
-                `;
-            });
-        },
+                    <div class="flex-column flex-shrink-0" style="align-items: flex-end; gap: 12px;">
+                        <span class="font-700 color-success text-lg">₱${this.formatMoney(t.amount)}</span>
+                        <button class="btn-outline btn-sm" onclick="app.openInvoiceModal('${t.id}')">Invoice</button>
+                    </div>
+                </div>
+            `;
+        });
+    },
 
     // --- Invoice Modal Functions ---
     openInvoiceModal(txnId) {
         const t = this.transactions.find(x => x.id === txnId);
         if (!t) return;
+
+        let financialRows = '';
+        
+        // Dynamically inject the penalty breakdown if it applies to the transaction
+        if (t.isOverdue && t.penaltyAmount > 0) {
+            financialRows = `
+                <div class="invoice-row"><span>Original Amount:</span> <strong>₱${this.formatMoney(t.originalAmount)}</strong></div>
+                <div class="invoice-row color-danger"><span>Overdue Penalty:</span> <strong>+ ₱${this.formatMoney(t.penaltyAmount)}</strong></div>
+                <div class="invoice-row mt-8"><span class="badge bg-danger">OVERDUE PAYMENT</span></div>
+                <div class="invoice-divider"></div>
+            `;
+        }
 
         const body = document.getElementById('invoiceBody');
         body.innerHTML = `
@@ -721,6 +977,7 @@ const app = {
             <div class="invoice-row"><span>Project:</span> <strong>${t.projName}</strong></div>
             <div class="invoice-row"><span>Milestone:</span> <strong>${t.milestoneName}</strong></div>
             <div class="invoice-divider"></div>
+            ${financialRows}
             <div class="invoice-row align-center">
                 <span class="font-600">Total Paid:</span> 
                 <strong class="invoice-total">₱${this.formatMoney(t.amount)}</strong>
@@ -747,7 +1004,8 @@ const app = {
                 milestones: [
                     { name: "50% Downpayment", amount: 12500, date: new Date().toISOString(), requested: true, paid: true, paidDate: new Date(Date.now() - 86400000).toISOString() },
                     { name: "50% Upon Delivery", amount: 12500, date: "2026-09-15", requested: false, paid: false, paidDate: null }
-                ]
+                ],
+                penalty: { type: "percent", amount: 2, when: "1 day after due date" }
             },
             {
                 id: 'PRJ-M1002',
@@ -762,6 +1020,20 @@ const app = {
                     { name: "Progress Payment", amount: 20000, date: "2026-09-20", requested: false, paid: false, paidDate: null },
                     { name: "Final Balance", amount: 20000, date: "2026-10-10", requested: false, paid: false, paidDate: null }
                 ]
+            },
+            {
+                id: 'PRJ-M1003',
+                customer: { name: "Gabriel Martin R. Manalo", mobile: "09190001111", email: "gabriel@pup.edu.ph" },
+                name: "Network Hardware Procurement",
+                total: 80000,
+                expectedDate: "2026-07-15",
+                status: "PARTIALLY_PAID",
+                createdAt: new Date("2026-06-01").toISOString(),
+                milestones: [
+                    { name: "Initial Deposit", amount: 40000, date: "2026-06-01", requested: true, paid: true, paidDate: "2026-06-05T12:00:00Z", amountPaid: 40000, penaltyPaid: 0 },
+                    { name: "Final Equipment Delivery", amount: 40000, date: "2026-07-15", requested: true, paid: false, paidDate: null }
+                ],
+                penalty: { type: "fixed", amount: 1500, when: "1 day after due date" }
             }
         ];
 
@@ -772,6 +1044,9 @@ const app = {
                 customerName: "Maria Clara",
                 milestoneName: "50% Downpayment",
                 amount: 12500,
+                originalAmount: 12500,
+                penaltyAmount: 0,
+                isOverdue: false,
                 date: new Date(Date.now() - 86400000).toISOString()
             }
         ];
