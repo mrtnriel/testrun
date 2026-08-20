@@ -1,6 +1,5 @@
 /**
  * G-Milestone Core Workflow Implementation
- * Original logic completely preserved, integrated directly into the new UI hooks.
  */
 
 const app = {
@@ -19,7 +18,7 @@ const app = {
     currentWizardStep: 1,
     totalWizardSteps: 5,
 
-    // Status Enums (Preserved)
+    // Status Enums 
     STATUS: {
         DRAFT: { text: "Draft", class: "bg-draft" },
         PAYMENT_REQUESTED: { text: "Payment Requested", class: "bg-requested" },
@@ -38,9 +37,7 @@ const app = {
         this.renderTransactions();
     },
 
-    // --- Navigation (Updated strictly to handle new UI visibility states) ---
     setupNavigation() {
-        // Handle nav items (works for both mobile bottom nav and desktop side nav)
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -60,7 +57,7 @@ const app = {
         
         this.currentViewId = viewId;
 
-        // UI State Updates for the Navigation Active Classes
+        // UI State Updates for Navigation Active Classes
         document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
         document.querySelectorAll(`.nav-item[data-target="${viewId}"]`).forEach(activeNav => {
             activeNav.classList.add('active');
@@ -84,7 +81,7 @@ const app = {
         const target = document.getElementById(viewId);
         if (target) target.classList.remove('hidden');
 
-        // Manage UI headers/footers based on the view being a "sub-view" (e.g. details, checkout, wizard)
+        // Manage UI headers/footers based on the view
         const isSubView = target && target.classList.contains('sub-view');
         const header = document.getElementById('appHeader');
         const backBtn = document.getElementById('globalBackBtn');
@@ -94,10 +91,13 @@ const app = {
         if (viewId === 'view-wallet') {
             header.classList.remove('sub-header');
             backBtn.classList.add('hidden');
-            title.innerHTML = '<span class="logo-circle">G</span> <span class="mobile-only-text">G-Milestone</span>';
+            // Hide the G-Milestone title exclusively on the Dashboard as requested
+            if (title) title.style.display = 'none'; 
             if (mobileNav) mobileNav.style.display = 'flex';
         } else {
             header.classList.add('sub-header');
+            // Ensure title displays on all other non-dashboard pages
+            if (title) title.style.display = 'flex'; 
             if (mobileNav) mobileNav.style.display = isSubView ? 'none' : 'flex';
             
             if (this.history.length > 0) {
@@ -114,7 +114,7 @@ const app = {
             if(viewId === 'view-checkout') title.innerText = 'Payment';
         }
 
-        // Fire rendering logic preserved from old JS
+        // Fire rendering logic
         if(viewId === 'view-wallet') this.updateDashboard();
         if(viewId === 'view-projects-list') this.renderProjectsList();
         if(viewId === 'view-transactions') this.renderTransactions();
@@ -124,7 +124,7 @@ const app = {
         return parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
 
-    // --- Core Logic: Dashboard (Preserved exactly as requested) ---
+    // --- Core Logic: Dashboard ---
     updateDashboard() {
         let totalValue = 0, collected = 0, activeCount = 0;
 
@@ -144,7 +144,7 @@ const app = {
         document.getElementById('dash-active-count').innerText = activeCount;
     },
 
-    // --- Core Logic: Wizard Flow & Create Project (Preserved) ---
+    // --- Core Logic: Wizard Flow & Create Project ---
     showCreateProject() {
         document.getElementById('create-project-form').reset();
         document.getElementById('milestones-container').innerHTML = '';
@@ -419,7 +419,7 @@ const app = {
         this.openProjectDetail(newProj.id);
     },
 
-    // --- Core Logic: Project Listing & Detail (Preserved) ---
+    // --- Core Logic: Project Listing & Detail ---
     renderProjectsList() {
         const grid = document.getElementById('projects-grid');
         grid.innerHTML = '';
@@ -550,7 +550,7 @@ const app = {
         this.navigateTo('view-project-detail');
     },
 
-    // --- State Machine Automation & Payment Handling (Preserved) ---
+    // --- State Machine Automation & Payment Handling ---
     openCheckout(projId, milestoneIdx) {
         this.currentProjectViewId = projId;
         this.currentCheckoutMilestoneIdx = milestoneIdx;
@@ -674,7 +674,7 @@ const app = {
         this.openProjectDetail(projId);
     },
 
-    // --- Ledger / History (Preserved) ---
+    // --- Ledger / History ---
     renderTransactions() {
         const listDiv = document.getElementById('ledger-list');
         listDiv.innerHTML = '';
@@ -700,7 +700,7 @@ const app = {
         });
     },
 
-    // --- Invoice Modal Functions (Preserved) ---
+    // --- Invoice Modal Functions ---
     openInvoiceModal(txnId) {
         const t = this.transactions.find(x => x.id === txnId);
         if (!t) return;
@@ -730,7 +730,7 @@ const app = {
         document.getElementById('invoiceModal').classList.add('hidden');
     },
 
-    // --- Seed Data (Preserved exactly to verify initial flow) ---
+    // --- Seed Data ---
     seedData() {
         this.projects = [
             {

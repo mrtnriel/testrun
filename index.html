@@ -61,11 +61,6 @@
                     </div>
 
                     <div class="content-padding pull-up">
-                        <div class="card p-16 mb-24 flex-row justify-between align-center">
-                            <span class="font-600 text-sm">Create a new order?</span>
-                            <button class="btn-primary btn-sm" onclick="app.showCreateProject()">+ New Project</button>
-                        </div>
-
                         <div class="summary-grid">
                             <div class="card summary-card">
                                 <span class="summary-label">Total Value</span>
@@ -90,7 +85,7 @@
                 <div id="view-projects-list" class="app-view hidden content-padding mt-24">
                     <div class="flex-row justify-between align-center mb-16">
                         <h1 class="page-title m-0">Projects</h1>
-                        <button class="btn-primary btn-sm" onclick="app.showCreateProject()">+ New</button>
+                        <button class="btn-primary btn-sm" onclick="app.showCreateProject()">+ New Project</button>
                     </div>
                     <div id="projects-grid" class="projects-list-container"></div>
                 </div>
@@ -190,9 +185,9 @@
                 <div id="view-project-detail" class="app-view hidden content-padding mt-24 sub-view">
                     <div class="card p-16 mb-16">
                         <div class="flex-row justify-between align-center border-bottom pb-12 mb-12">
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-0 pr-12">
                                 <h2 class="font-700 text-lg m-0 mb-4 text-truncate" id="det-name">Project Name</h2>
-                                <div class="text-sm font-600 color-main" id="det-customer">Customer</div>
+                                <div class="text-sm font-600 color-main text-truncate" id="det-customer">Customer</div>
                                 <div class="text-xs text-muted" id="det-mobile">Mobile</div>
                             </div>
                             <div id="det-status-badge" class="badge">STATUS</div>
@@ -264,7 +259,7 @@
         </div>
     </div>
 
-    <!-- Reintegrated Modals with perfect ID matches -->
+    <!-- Modals -->
     <div id="invoiceModal" class="modal-overlay hidden" onclick="if(event.target === this) app.closeInvoiceModal()">
         <div class="modal-surface">
             <div class="modal-header border-bottom p-16 flex-row justify-between align-center">
